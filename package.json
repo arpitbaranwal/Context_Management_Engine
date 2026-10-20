@@ -1,0 +1,17 @@
+{
+  "name": "context-management-engine-root",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Context Management Engine — High-Performance Hybrid RAG Workspace (FastAPI + React 19 + FAISS + BM25 + Gemini)",
+  "engines": {
+    "node": ">=20.19.0 || >=22.12.0",
+    "npm": ">=10"
+  },
+  "scripts": {
+    "setup:frontend": "npm ci --prefix frontend",
+    "dev": "npm run dev --prefix frontend",
+    "build": "npm run build --prefix frontend",
+    "preview": "npm run preview --prefix frontend",
+    "typecheck": "npm run typecheck --prefix frontend"
+  }
+}

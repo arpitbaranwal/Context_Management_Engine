@@ -1,0 +1,4 @@
+# Kept for compatibility with the original Streamlit prototype.
+# For the complete FastAPI + RAG environment, use the repository-root
+# requirements.txt instead.
+-r ../dependencies/python-requirements.txt

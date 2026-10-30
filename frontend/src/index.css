@@ -4,9 +4,10 @@
 
 /* One palette, two lightness settings. Same accent hue in both themes. */
 :root {
-  --bg: #f4f4f1;
-  --surface: #ffffff;
-  --sunken: #eeeeea;
+  --bg: #f5f5f2;
+  --surface: rgba(255, 255, 255, 0.88);
+  --surface-opaque: #ffffff;
+  --sunken: #ededeb;
   --ink: #1e211f;
   --muted: #666b67;
   --line: #e0e0da;
@@ -18,23 +19,28 @@
   --danger-soft: #fbeceb;
   --warn: #8a5a00;
   --warn-soft: #f8f0dc;
+  --scrollbar-thumb: rgba(0, 0, 0, 0.15);
+  --scrollbar-thumb-hover: rgba(0, 0, 0, 0.3);
   color-scheme: light;
 }
 .dark {
-  --bg: #161817;
-  --surface: #1e2120;
-  --sunken: #191b1a;
-  --ink: #ecece7;
-  --muted: #9a9f9a;
-  --line: #2b2f2d;
-  --line-strong: #3a3f3c;
-  --accent: #5cbfaa;
-  --accent-ink: #0f1b18;
-  --accent-soft: #1f2f2b;
-  --danger: #f0867d;
-  --danger-soft: #35201f;
-  --warn: #e3b75c;
-  --warn-soft: #302a1b;
+  --bg: #090b0a;
+  --surface: rgba(18, 22, 21, 0.75);
+  --surface-opaque: #121615;
+  --sunken: rgba(14, 18, 17, 0.75);
+  --ink: #f0f2f1;
+  --muted: #959c98;
+  --line: rgba(255, 255, 255, 0.08);
+  --line-strong: rgba(255, 255, 255, 0.14);
+  --accent: #2dd4bf;
+  --accent-ink: #042f2e;
+  --accent-soft: rgba(45, 212, 191, 0.12);
+  --danger: #f87171;
+  --danger-soft: rgba(239, 68, 68, 0.15);
+  --warn: #fbbf24;
+  --warn-soft: rgba(245, 158, 11, 0.15);
+  --scrollbar-thumb: rgba(255, 255, 255, 0.12);
+  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.28);
   color-scheme: dark;
 }
 
@@ -58,9 +64,13 @@
   --radius-control: 8px;
 }
 
-html { -webkit-text-size-adjust: 100%; }
+html, body {
+  overflow-x: hidden;
+  min-height: 100%;
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
-  background: var(--bg);
   color: var(--ink);
   font-family: var(--font-sans);
   font-size: 14.5px;
@@ -68,7 +78,27 @@ body {
   -webkit-font-smoothing: antialiased;
   font-feature-settings: 'tnum' 1;
 }
-::selection { background: var(--accent-soft); }
+
+.dark body {
+  background-color: #090b0a;
+  background-image: 
+    radial-gradient(ellipse 70% 40% at 50% 0%, rgba(45, 212, 191, 0.10), transparent 75%),
+    radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-size: 100% 100%, 24px 24px;
+  background-position: center top, 0 0;
+  background-repeat: no-repeat, repeat;
+  background-attachment: fixed;
+}
+
+:root:not(.dark) body {
+  background-color: #f6f6f3;
+  background-image: radial-gradient(rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+  background-size: 24px 24px;
+  background-repeat: repeat;
+  background-attachment: fixed;
+}
+
+::selection { background: var(--accent-soft); color: var(--accent); }
 
 @layer base {
   :focus-visible {
@@ -77,13 +107,81 @@ body {
   }
 }
 
-.prose-answer {
-  font-family: var(--font-serif);
-  font-size: 1.1875rem;
-  line-height: 1.65;
-  max-width: 66ch;
+/* =========================================================
+   Glassmorphic Surface System & Specular Highlights
+   ========================================================= */
+.glass-card {
+  background: rgba(18, 22, 21, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.12), 0 12px 32px -8px rgba(0, 0, 0, 0.5);
 }
-.prose-answer p + p { margin-top: 0.9em; }
+
+:root:not(.dark) .glass-card {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.9), 0 12px 32px -8px rgba(0, 0, 0, 0.06);
+}
+
+.glass-panel {
+  background: rgba(14, 18, 17, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.1), 0 8px 24px -6px rgba(0, 0, 0, 0.4);
+}
+
+:root:not(.dark) .glass-panel {
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.95), 0 8px 24px -6px rgba(0, 0, 0, 0.04);
+}
+
+.specular-border {
+  position: relative;
+}
+.specular-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.02) 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.prose-answer {
+  font-family: var(--font-sans);
+  font-size: 14.5px;
+  line-height: 1.7;
+  color: var(--ink);
+  max-width: 68ch;
+}
+.prose-answer p + p { margin-top: 0.85em; }
+
+.inline-math {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1em;
+  letter-spacing: 0.01em;
+  padding: 0 1px;
+  margin: 0;
+  display: inline;
+}
+.inline-math sub, .inline-math sup {
+  font-family: var(--font-sans);
+  font-style: normal;
+  font-size: 0.75em;
+}
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -98,3 +196,119 @@ body {
 .skeleton { background: var(--sunken); border-radius: 6px; animation: shimmer 1.4s ease-in-out infinite; }
 @keyframes spin { to { transform: rotate(360deg) } }
 .spin { animation: spin 0.8s linear infinite; }
+
+/* =========================================================
+   Ultra-thin OS-style scrollbars across the application
+   ========================================================= */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
+}
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+/* =========================================================
+   Chrome / Safari Autofill Clash Overrides
+   ========================================================= */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #121615 inset !important;
+  box-shadow: 0 0 0 1000px #121615 inset !important;
+  -webkit-text-fill-color: #ffffff !important;
+  caret-color: #ffffff !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+:root:not(.dark) input:-webkit-autofill,
+:root:not(.dark) input:-webkit-autofill:hover, 
+:root:not(.dark) input:-webkit-autofill:focus, 
+:root:not(.dark) input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+  box-shadow: 0 0 0 1000px #ffffff inset !important;
+  -webkit-text-fill-color: #1e211f !important;
+  caret-color: #1e211f !important;
+}
+
+/* =========================================================
+   Motion & Pipeline Keyframes
+   ========================================================= */
+@keyframes ramPulseWarning {
+  0%, 100% {
+    box-shadow: 0 0 6px rgba(245, 158, 11, 0.4);
+    opacity: 0.95;
+  }
+  50% {
+    box-shadow: 0 0 14px rgba(245, 158, 11, 0.85);
+    opacity: 0.65;
+  }
+}
+.animate-ram-pulse {
+  animation: ramPulseWarning 1.5s ease-in-out infinite;
+}
+
+@keyframes pipelinePulse {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(200%);
+    opacity: 0;
+  }
+}
+.animate-pipeline-beam {
+  animation: pipelinePulse 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes verticalBeam {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(200%);
+    opacity: 0;
+  }
+}
+.animate-vertical-beam {
+  animation: verticalBeam 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes streamDash {
+  0% {
+    stroke-dashoffset: 48;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+.animate-stream-path {
+  stroke-dasharray: 6 4;
+  animation: streamDash 1.2s linear infinite;
+}

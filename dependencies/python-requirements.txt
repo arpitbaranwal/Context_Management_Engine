@@ -13,7 +13,6 @@ numpy>=1.26,<3
 PyMuPDF>=1.24,<2
 Pillow>=10,<12
 pytesseract>=0.3.10,<1
-rank-bm25>=0.2.2,<1
 sentence-transformers>=3,<4
 faiss-cpu>=1.8,<2
 google-generativeai>=0.8,<1

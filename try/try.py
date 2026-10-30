@@ -2,7 +2,12 @@ import streamlit as st
 import pymupdf  
 import numpy as np
 import faiss
-from rank_bm25 import BM25Okapi
+try:
+    from rank_bm25 import BM25Okapi
+except ImportError:
+    BM25Okapi = None
+
+from engine.bm25f_index import CustomBM25FIndex, StructuredChunk
 from sentence_transformers import SentenceTransformer
 import google.generativeai as genai
 from PIL import Image
@@ -35,7 +40,7 @@ class HybridRAGEngine:
         self.chunks = chunks
         
         tokenized_corpus = [chunk['text'].lower().split() for chunk in chunks]
-        self.bm25 = BM25Okapi(tokenized_corpus)
+        self.bm25 = BM25Okapi(tokenized_corpus) if BM25Okapi is not None else None
         
         texts = [chunk['text'] for chunk in chunks]
         embeddings = self.embedding_model.encode(texts, convert_to_numpy=True)
@@ -49,7 +54,7 @@ class HybridRAGEngine:
         filtered_tokens = [w for w in raw_tokens if w not in CONVERSATIONAL_STOPWORDS]
         bm25_query = filtered_tokens if filtered_tokens else raw_tokens
         
-        bm25_scores = self.bm25.get_scores(bm25_query)
+        bm25_scores = self.bm25.get_scores(bm25_query) if self.bm25 is not None else [0.0] * len(self.chunks)
         top_bm25_indices = np.argsort(bm25_scores)[::-1][:top_k]
         
         # 2. Semantic search uses the full query to capture intent
@@ -95,12 +100,18 @@ def generate_answer(query, context):
     # Updated to gemini-3.5-flash as it is the stable model currently available
     model = genai.GenerativeModel('gemini-3.5-flash') 
     
-    prompt = f"""You are an intelligent data assistant. Use the provided Context as your primary factual source to answer the user's Question.
+    prompt = f"""You are an elite research analyst and expert technical educator powered by an advanced Context Management Engine.
+Answer the user's Question in an authoritative, thorough, and highly insightful manner based strictly on the provided Context below.
 
-RULES:
-1. You may simplify explanations, translate into layman's terms, format the response cleanly, and create illustrative real-life examples or analogies, provided the underlying facts and concepts come directly from the Context.
-2. If the core topic or subject asked by the user is completely missing or unmentioned in the Context, respond strictly with: "The information is not provided."
-3. Do not introduce outside facts, dates, or concepts that are unrelated to what is discussed in the Context.
+CONTENT & PRESENTATION RULES:
+1. Direct & Authoritative Start: Jump directly into the explanation with a crisp high-level summary. NEVER start with robotic meta-announcements such as "Based on the provided context...", "According to the document...", or "In the text provided...".
+2. Rich Hierarchical Organization: Structure your response cleanly using descriptive Markdown section headings (`### Overview`, `### Structure of ...`, `### Core Components`, `### Real-Life Example: ...`).
+3. In-Depth Component Analysis: When explaining concepts, architectures, or elements, give a comprehensive breakdown of each component, detailing what it is, why it matters, and standard industry terminology (e.g. Type I / Type II errors, false alarm, specific notation).
+4. Concrete Real-World Examples: When asked for examples or real-world application, provide a vivid, detailed real-life scenario comparing contrasting operational domains (e.g. high-stakes security/defense facility vs retail store discounts) to explain why the cost of errors varies.
+5. Clean Technical Notation: Present equations, metrics, and symbols cleanly. Write standalone equations on their own lines or use natural terms (e.g., F1 score, True Positive Rate). Avoid awkward LaTeX syntax, escaped braces, or raw textbook index clutter ($x_i^{(2)}$, $y_i$) in bullet headings.
+6. Strictly Grounded: Ground every fact and definition directly in the Context. You may rephrase, synthesize, and use intuitive analogies to make the explanation vivid and thorough, but do not introduce contradictory or outside facts.
+7. Missing Context: Only if the Context has no relevant information to answer the question, output exactly: "The information is not provided in the document."
+8. No Bracketed Internal IDs: Never output internal chunk markers like [doc_chunk_1], [S1], or [DSML_p20] in the text.
 
 Context:
 {context}

@@ -47,7 +47,10 @@ export async function request<T>(path: string, init: RequestInit = {}): Promise<
         ...init.headers,
       },
     })
-  } catch {
+  } catch (err: any) {
+    if (err?.name === 'AbortError') {
+      throw new ApiError('Generation paused.', 0, false)
+    }
     throw new ApiError('Unable to connect to the research engine.', 0, true)
   }
   if (!res.ok) throw await errorFrom(res)

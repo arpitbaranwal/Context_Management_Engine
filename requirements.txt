@@ -1,3 +1,7 @@
-# Complete Python environment for the FastAPI bridge and RAG engine.
-# See dependencies/python-requirements.txt for package notes.
--r dependencies/python-requirements.txt
+streamlit>=1.40,<2
+PyMuPDF>=1.24,<2
+faiss-cpu>=1.8,<2
+sentence-transformers>=3,<4
+google-generativeai>=0.8,<1
+numpy>=1.26,<3
+python-dotenv>=1.0,<2

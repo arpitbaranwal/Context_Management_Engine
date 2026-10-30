@@ -19,8 +19,8 @@ export function AppShell({ route, children }: { route: string; children: ReactNo
 
   return (
     <div className="flex min-h-dvh flex-col">
-      <header className="sticky top-0 z-20 border-b border-line bg-bg/90 backdrop-blur-sm">
-        <div className="mx-auto flex h-14 max-w-6xl items-center gap-6 px-4 sm:px-6">
+      <header className="sticky top-0 z-30 border-b border-line bg-surface/75 backdrop-blur-md shadow-xs">
+        <div className="mx-auto flex h-14 max-w-[1440px] items-center gap-6 px-4 sm:px-6">
           <Link to="/" aria-label="Context Management Engine, home" className="shrink-0 rounded-md">
             <Brand />
           </Link>
@@ -30,7 +30,12 @@ export function AppShell({ route, children }: { route: string; children: ReactNo
                 key={n.to}
                 to={n.to}
                 aria-current={isActive(n.to) ? 'page' : undefined}
-                className={cn('rounded-md px-3 py-1.5 text-sm transition-colors', isActive(n.to) ? 'bg-sunken font-medium text-ink' : 'text-muted hover:text-ink')}
+                className={cn(
+                  'rounded-md px-3 py-1.5 text-sm transition-all',
+                  isActive(n.to)
+                    ? 'bg-sunken border border-line font-medium text-ink shadow-xs'
+                    : 'text-muted hover:text-ink hover:bg-sunken/50'
+                )}
               >
                 {n.label}
               </Link>

@@ -1,6 +1,6 @@
 import { ApiError, request, tokenStore, uploadForm } from '../client'
 import type {
-  ApiAdapter, AuthSession, Chunk, Document, DocumentType, ResearchResponse, RetrievalDetails, User,
+  ApiAdapter, AuthSession, Chunk, Document, DocumentType, ResearchResponse, RetrievalDetails, SystemTelemetry, TelemetryData, User,
 } from '../types'
 
 /**
@@ -20,6 +20,7 @@ interface RawQueryResponse {
   latencyMs?: number
   grounded?: boolean
   retrieval?: RetrievalDetails
+  telemetry?: TelemetryData
 }
 
 const toChunk = (c: RawChunk): Chunk => ({ id: c.id, source: c.source, text: c.text, page: c.page })
@@ -112,7 +113,13 @@ export const liveAdapter: ApiAdapter = {
     async ask(req): Promise<ResearchResponse> {
       const r = await request<RawQueryResponse>('/api/research/query', {
         method: 'POST',
-        body: JSON.stringify({ query: req.query, documentIds: req.documentIds, topK: req.topK ?? 5 }),
+        body: JSON.stringify({
+          query: req.query,
+          documentIds: req.documentIds,
+          topK: req.topK ?? 5,
+          history: req.history,
+        }),
+        signal: req.signal,
       })
       // Sources are the chunks that were sent to the model. The bridge's
       // `citations` array is not used: its page numbers are placeholders.
@@ -124,7 +131,11 @@ export const liveAdapter: ApiAdapter = {
         grounded: r.grounded,
         latencyMs: r.latencyMs,
         retrieval: r.retrieval,
+        telemetry: r.telemetry,
       }
+    },
+    async getTelemetry(): Promise<SystemTelemetry> {
+      return await request<SystemTelemetry>('/api/telemetry')
     },
   },
 }

@@ -50,10 +50,17 @@ export interface UploadHandlers {
   onStage?: (stage: UploadStage, progress?: number) => void
 }
 
+export interface ChatHistoryMessage {
+  role: 'user' | 'assistant'
+  content: string
+}
+
 export interface ResearchRequest {
   query: string
   documentIds: string[]
   topK?: number
+  history?: ChatHistoryMessage[]
+  signal?: AbortSignal
 }
 
 export interface Source {
@@ -83,6 +90,48 @@ export interface RetrievalDetails {
   latencyMs?: number
 }
 
+export interface TelemetryDecision {
+  status: 'PROCEED' | 'ABSTAIN_LOW_CONFIDENCE' | string
+  confidenceScore: number
+  reason?: string
+}
+
+export interface TelemetryActiveSlot {
+  chunkId: string
+  page?: number
+  header?: string
+  isPinned?: boolean
+  tokenCount?: number
+  source?: string
+}
+
+export interface TelemetryWorkingMemory {
+  usedTokens: number
+  maxTokens: number
+  activeSlotsCount: number
+  evictionsCount: number
+  activeSlots?: TelemetryActiveSlot[]
+}
+
+export interface TelemetryRetrieval {
+  latencyMs: number
+  selectedChunksCount: number
+  originalQuery: string
+  expandedQuery?: string
+  subQueries?: string[]
+}
+
+export interface TelemetryData {
+  decision: TelemetryDecision
+  retrieval: TelemetryRetrieval
+  workingMemory: TelemetryWorkingMemory
+}
+
+export interface SystemTelemetry {
+  workingMemory: TelemetryWorkingMemory
+  lastTelemetry?: TelemetryData | null
+}
+
 export interface ResearchResponse {
   answer: string
   sources: Source[]
@@ -90,6 +139,7 @@ export interface ResearchResponse {
   grounded?: boolean
   latencyMs?: number
   retrieval?: RetrievalDetails
+  telemetry?: TelemetryData
 }
 
 export interface HealthStatus {
@@ -114,5 +164,6 @@ export interface ApiAdapter {
   }
   research: {
     ask(req: ResearchRequest): Promise<ResearchResponse>
+    getTelemetry?(): Promise<SystemTelemetry>
   }
 }

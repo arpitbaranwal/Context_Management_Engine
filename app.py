@@ -18,7 +18,7 @@ load_dotenv()
 # Fallback Gemini API Key from environment or hardcoded configuration
 DEFAULT_GEMINI_KEY = os.getenv(
     "GEMINI_API_KEY",
-    "AQ.Ab8RN6I-Wqq5Pj9FmwLaun4caC-CYEA4Zv747R7DuNAHtj-vuQ",
+    "GEMINI_API_KEY",
 )
 
 CANDIDATE_MODELS = [

@@ -15,11 +15,8 @@ from engine import (
 # Load environment variables (.env)
 load_dotenv()
 
-# Fallback Gemini API Key from environment or hardcoded configuration
-DEFAULT_GEMINI_KEY = os.getenv(
-    "GEMINI_API_KEY",
-    "GEMINI_API_KEY",
-)
+# Load Gemini API Key strictly from environment
+DEFAULT_GEMINI_KEY = os.getenv("GEMINI_API_KEY", "").strip()
 
 CANDIDATE_MODELS = [
     "gemini-3.5-flash-lite",

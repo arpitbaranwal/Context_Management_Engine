@@ -16,7 +16,7 @@ import pytesseract
 # Uncomment and set this path if Tesseract is not in your Windows PATH automatically:
 # pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
-GEMINI_API_KEY = "AQ.Ab8RN6L_6OrWZgSr3xv9JPNk0lpHSNTfu5a7WbdTGCCdpwzerg"
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "").strip()
 
 # List of conversational filler words to ignore during lexical keyword scoring
 CONVERSATIONAL_STOPWORDS = {

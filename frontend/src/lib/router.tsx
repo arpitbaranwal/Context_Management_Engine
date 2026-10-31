@@ -1,7 +1,12 @@
 import { useEffect, useState, type AnchorHTMLAttributes } from 'react'
 
-/** Tiny hash router. Three top-level routes do not justify a dependency. */
-const read = () => (window.location.hash.replace(/^#/, '') || '/')
+/** Tiny hash/pathname router. */
+const read = () => {
+  const hash = window.location.hash.replace(/^#/, '').split('?')[0]
+  if (hash) return hash.startsWith('/') ? hash : `/${hash}`
+  const path = window.location.pathname || '/'
+  return path
+}
 
 export function useRoute(): string {
   const [path, setPath] = useState(read)

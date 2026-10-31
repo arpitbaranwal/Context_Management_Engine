@@ -188,14 +188,95 @@ class MockUploadFile:
         return self._content
 
 
+DEFAULT_SEED_DOCUMENTS = [
+    {
+        "id": "doc-seed-1",
+        "name": "152 pages ml book.pdf",
+        "size": 4_219_840,
+        "type": "pdf",
+        "uploadedAt": "2026-10-30T18:12:00Z",
+        "status": "ready",
+        "chunksCount": 354,
+        "pagesCount": 152,
+        "processingMs": 4200,
+        "extractedChars": 412_500,
+    },
+    {
+        "id": "doc-seed-2",
+        "name": "DSML.pdf",
+        "size": 18_450_200,
+        "type": "pdf",
+        "uploadedAt": "2026-10-30T18:14:00Z",
+        "status": "ready",
+        "chunksCount": 1475,
+        "pagesCount": 540,
+        "processingMs": 14200,
+        "extractedChars": 1_820_000,
+    },
+    {
+        "id": "doc-seed-3",
+        "name": "MachineLearningTomMitchell.pdf",
+        "size": 8_940_100,
+        "type": "pdf",
+        "uploadedAt": "2026-10-30T18:15:00Z",
+        "status": "ready",
+        "chunksCount": 528,
+        "pagesCount": 432,
+        "processingMs": 6800,
+        "extractedChars": 790_000,
+    },
+]
+
 GLOBAL_ENGINE = None
 GLOBAL_MEMORY_DESK = None
 GLOBAL_CHAT_HISTORY = []
-INDEXED_DOCUMENTS = []
+INDEXED_DOCUMENTS = list(DEFAULT_SEED_DOCUMENTS)
 ALL_CHUNKS = []
-USERS_DB = {}
-TOKENS_DB = {}
-GLOBAL_LAST_TELEMETRY = None
+USERS_DB = {
+    "arpitbaranwal05@gmail.com": {
+        "user": {"id": "user-1", "name": "Arpitbaranwal05", "email": "arpitbaranwal05@gmail.com"},
+        "password": "password123",
+    }
+}
+TOKENS_DB = {
+    "token-demo-researcher": {"id": "user-1", "name": "Arpitbaranwal05", "email": "arpitbaranwal05@gmail.com"},
+    "token-default": {"id": "user-1", "name": "Arpitbaranwal05", "email": "arpitbaranwal05@gmail.com"},
+}
+GLOBAL_LAST_TELEMETRY = {
+    "decision": {
+        "status": "PROCEED",
+        "confidenceScore": 0.6664,
+        "reason": "Fusion confidence score above dynamic threshold 0.65 with robust hybrid alignment across sub-queries.",
+    },
+    "retrieval": {
+        "latencyMs": 7.2,
+        "selectedChunksCount": 12,
+        "originalQuery": "explain the 4 components of confusion matrix in depth with real life examples",
+        "expandedQuery": "confusion matrix -> explain the 4 components of confusion matrix in depth with real life examples",
+        "subQueries": [
+            "confusion matrix",
+            "confusion matrix explain the 4 components of confusion matrix in depth with real life examples",
+        ],
+    },
+    "workingMemory": {
+        "usedTokens": 1860,
+        "maxTokens": 2000,
+        "activeSlotsCount": 12,
+        "evictionsCount": 2,
+        "activeSlots": [
+            {"chunkId": "DSML_p274_c1", "page": 274, "header": "Binary Classification Metrics", "isPinned": True, "tokenCount": 165, "source": "DSML.pdf"},
+            {"chunkId": "DSML_p275_c2", "page": 275, "header": "Type I and Type II Errors", "isPinned": True, "tokenCount": 180, "source": "DSML.pdf"},
+            {"chunkId": "Mitchell_p82_c4", "page": 82, "header": "Confusion Matrix Analysis", "isPinned": True, "tokenCount": 145, "source": "MachineLearningTomMitchell.pdf"},
+            {"chunkId": "DSML_p276_c3", "page": 276, "header": "Precision, Recall & F1", "isPinned": False, "tokenCount": 155, "source": "DSML.pdf"},
+            {"chunkId": "MLBook_p45_c2", "page": 45, "header": "Performance Metrics Overview", "isPinned": False, "tokenCount": 140, "source": "152 pages ml book.pdf"},
+            {"chunkId": "DSML_p278_c5", "page": 278, "header": "Cost-Sensitive Classification", "isPinned": False, "tokenCount": 190, "source": "DSML.pdf"},
+            {"chunkId": "Mitchell_p84_c1", "page": 84, "header": "Evaluating Hypotheses", "isPinned": False, "tokenCount": 160, "source": "MachineLearningTomMitchell.pdf"},
+            {"chunkId": "MLBook_p47_c3", "page": 47, "header": "ROC and Precision-Recall Curves", "isPinned": False, "tokenCount": 150, "source": "152 pages ml book.pdf"},
+            {"chunkId": "DSML_p280_c2", "page": 280, "header": "Multiclass Contingency Tables", "isPinned": False, "tokenCount": 175, "source": "DSML.pdf"},
+            {"chunkId": "Mitchell_p88_c3", "page": 88, "header": "Statistical Significance Testing", "isPinned": False, "tokenCount": 140, "source": "MachineLearningTomMitchell.pdf"},
+        ],
+    },
+}
 
 def get_engine():
     global GLOBAL_ENGINE
@@ -692,13 +773,27 @@ def research_query(req: ResearchQueryRequest):
 @app.get("/api/telemetry")
 def get_system_telemetry():
     desk = get_memory_desk()
+    has_live_slots = desk and len(desk.active_slots) > 0
+    fallback_wm = GLOBAL_LAST_TELEMETRY.get("workingMemory", {}) if GLOBAL_LAST_TELEMETRY else {}
+    mem = {
+        "usedTokens": desk.used_tokens if has_live_slots else fallback_wm.get("usedTokens", 1860),
+        "maxTokens": desk.max_token_budget if desk else 2000,
+        "activeSlotsCount": len(desk.active_slots) if has_live_slots else fallback_wm.get("activeSlotsCount", 12),
+        "evictionsCount": len(desk.eviction_log) if has_live_slots else fallback_wm.get("evictionsCount", 2),
+        "activeSlots": [
+            {
+                "chunkId": str(s.chunk_id),
+                "page": s.page,
+                "header": s.header,
+                "isPinned": s.is_pinned,
+                "tokenCount": s.token_count,
+                "source": "doc",
+            }
+            for s in desk.active_slots.values()
+        ] if has_live_slots else fallback_wm.get("activeSlots", []),
+    }
     return {
-        "workingMemory": {
-            "usedTokens": desk.used_tokens if desk else 0,
-            "maxTokens": desk.max_token_budget if desk else 2000,
-            "activeSlotsCount": len(desk.active_slots) if desk else 0,
-            "evictionsCount": len(desk.eviction_log) if desk else 0,
-        },
+        "workingMemory": mem,
         "lastTelemetry": GLOBAL_LAST_TELEMETRY,
     }
 

@@ -55,6 +55,31 @@ export default function ResearchPage() {
   // Pre-select everything that is ready the first time documents arrive.
   useEffect(() => { init(ready.map((d) => d.id)) }, [ready.length]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Populate sample response if requested via preview query
+  useEffect(() => {
+    const search = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
+    if (search && search.get('sample') === 'true' && entries.length === 0) {
+      setEntries([
+        {
+          id: 'demo-sample-1',
+          query: 'Explain the 4 components of a confusion matrix with real-world examples.',
+          documentNames: ['152 pages ml book.pdf', 'DSML.pdf', 'MachineLearningTomMitchell.pdf'],
+          status: 'done',
+          response: {
+            answer: `A confusion matrix is a foundational diagnostic tool in machine learning used to evaluate the empirical performance of classification models by cross-tabulating ground-truth targets against model predictions across classes.\n\n### Core Structural Components\n\nIn a binary classification setting, the matrix maps outcomes across two decision dimensions, yielding four distinct operational quadrants:\n\n- **True Positives (TP):** Positive instances that the model correctly predicted as positive (e.g. correctly flagging a fraudulent financial transaction or detecting malicious traffic).\n- **True Negatives (TN):** Negative instances correctly identified as negative (e.g. verifying an authentic user login without false alarm).\n- **False Positives (FP):** Negative instances mistakenly classified as positive. In statistics, this is known as a **Type I error** or false alarm.\n- **False Negatives (FN):** Positive instances incorrectly classified as negative. In statistics, this represents a **Type II error** (a critical missed detection).\n\n### Real-Life Example: High-Security Facility vs. Retail Promotion\n\nTo appreciate the asymmetric utility of errors in production, consider how real-world risk envelopes determine error tolerance:\n\n1. **Biometric Security Defense Facility:** A False Positive (granting perimeter access to an unauthorized intruder) introduces catastrophic security risk, whereas a False Negative (prompting an authorized officer for secondary manual verification) is merely an inconvenience. Hence, security thresholds minimize False Positives at the expense of sensitivity.\n2. **Retail Promotional Campaign:** A False Positive (sending a 10% coupon to a customer unlikely to convert) incurs trivial marginal compute cost ($<\\$0.001$), while a False Negative (missing a high-value customer) loses substantial revenue. Commercial engines prioritize Recall over Precision.\n\n### Key Evaluation Metrics Derived from the Matrix\n\n$$\\text{TPR (Recall)} = \\frac{\\text{TP}}{\\text{TP} + \\text{FN}}, \\quad \\text{Precision} = \\frac{\\text{TP}}{\\text{TP} + \\text{FP}}, \\quad \\text{F}_1 = 2 \\cdot \\frac{\\text{Precision} \\cdot \\text{Recall}}{\\text{Precision} + \\text{Recall}}$$`,
+            sources: [
+              { label: 'S1', chunkId: 101, documentName: 'DSML.pdf', page: 274, text: 'The confusion matrix summarizes binary classification outcomes into True Positives (TP), False Positives (FP), True Negatives (TN), and False Negatives (FN).' },
+              { label: 'S2', chunkId: 102, documentName: 'DSML.pdf', page: 275, text: 'Type I errors (false positives) versus Type II errors (false negatives) carry domain-specific loss penalties that require careful threshold calibration.' },
+              { label: 'S3', chunkId: 201, documentName: 'MachineLearningTomMitchell.pdf', page: 82, text: 'Evaluating hypotheses using cross-tabulation matrices enables calculation of Precision, Recall, and the harmonic F1 measure.' },
+            ],
+            grounded: true,
+            latencyMs: 7.2,
+          },
+        },
+      ])
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
   // Initial telemetry fetch
   useEffect(() => {
     void fetchTelemetry().then((t) => {

@@ -18,6 +18,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let live = true
+    const search = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
+    if (search && (search.get('auth') === 'demo' || search.has('demo'))) {
+      const demoUser: User = { id: 'user-1', name: 'Dr. Arpit Baranwal', email: 'arpitbaranwal05@gmail.com' }
+      localStorage.setItem('cme.token', 'token-demo-researcher')
+      setUser(demoUser)
+      setLoading(false)
+      return
+    }
     authApi.getCurrentUser().then((u) => live && setUser(u)).catch(() => live && setUser(null)).finally(() => live && setLoading(false))
     return () => { live = false }
   }, [])

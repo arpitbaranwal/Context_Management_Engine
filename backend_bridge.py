@@ -544,6 +544,15 @@ def research_query(req: ResearchQueryRequest):
             clean_answer = re.sub(r"\s*\[chunk_[a-zA-Z0-9_\-]+\]", "", clean_answer)
             clean_answer = re.sub(r"\s+([.,;:!?])", r"\1", clean_answer)
             clean_answer = re.sub(r"\.{2,}", ".", clean_answer).strip()
+            # Strip robotic meta-intros if generated
+            clean_answer = re.sub(
+                r"^(Based on the (provided|uploaded) (context|documents?|information),?\s*|According to the (provided\s+)?(context|documents?|text),?\s*)",
+                "",
+                clean_answer,
+                flags=re.IGNORECASE,
+            ).strip()
+            if clean_answer and clean_answer[0].islower():
+                clean_answer = clean_answer[0].upper() + clean_answer[1:]
             answer = clean_answer
             grounded = "not provided in the document" not in answer.lower()
         except Exception as e:

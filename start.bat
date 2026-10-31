@@ -6,7 +6,10 @@ echo ========================================================
 echo.
 
 :: Detect virtual environment Python or system Python
-if exist ".venv\Scripts\python.exe" (
+if exist "C:\Users\asus\AppData\Local\Programs\Python\Python311\python.exe" (
+    set "PYTHON_CMD=C:\Users\asus\AppData\Local\Programs\Python\Python311\python.exe"
+    echo [*] Detected Python 3.11 at AppData Programs
+) else if exist ".venv\Scripts\python.exe" (
     set "PYTHON_CMD=.venv\Scripts\python.exe"
     echo [*] Detected virtual environment at .venv
 ) else if exist "venv\Scripts\python.exe" (
@@ -21,8 +24,8 @@ if exist ".venv\Scripts\python.exe" (
     )
 )
 
-echo [1/2] Launching FastAPI backend (port 8000)...
-start "CME Backend Bridge" cmd /k "%PYTHON_CMD% -m uvicorn backend_bridge:app --host 127.0.0.1 --port 8000 --reload"
+echo [1/2] Launching FastAPI backend (port 8000 on 0.0.0.0)...
+start "CME Backend Bridge" cmd /k "%PYTHON_CMD% -m uvicorn backend_bridge:app --host 0.0.0.0 --port 8000 --reload"
 
 echo [2/2] Launching React Frontend (port 5173)...
 start "CME Frontend UI" cmd /k "npm run dev"

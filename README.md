@@ -140,11 +140,11 @@ The smoothing parameter $k = 60$ ensures top-ranked candidates from either modal
 ### 3. OS-Style Working Memory Utility & Eviction (`WorkingMemoryDesk`)
 Context slots on the study desk are managed dynamically under a strict $W_{\text{budget}} = 2,000$ word ceiling. Each active chunk $c_i$ receives a real-time utility score:
 
-$$\text{Utility}(c_i, t) = 0.50 \cdot \hat{S}_{\text{RRF}}(c_i) + 0.35 \cdot \mathbb{I}_{\text{pinned}}(c_i) + 0.15 \cdot e^{-\lambda (t - t_{\text{last\_used}})}$$
+$$\text{Utility}(c_i, t) = 0.50 \cdot \hat{S}_{\text{RRF}}(c_i) + 0.35 \cdot \mathbb{I}_{\text{pinned}}(c_i) + 0.15 \cdot e^{-\lambda (t - t_{\text{last}})}$$
 
 - $\hat{S}_{\text{RRF}}(c_i) \in [0, 1]$ represents the normalized fusion retrieval score for the current turn.
 - $\mathbb{I}_{\text{pinned}}(c_i) \in \{0, 1\}$ is an indicator variable set to $1$ if the chunk was cited in the immediately preceding response, preventing context loss during follow-up queries.
-- $e^{-\lambda (t - t_{\text{last\_used}})}$ represents exponential half-life decay ($\lambda = 0.35$) for uncited background chunks.
+- $e^{-\lambda (t - t_{\text{last}})}$ represents exponential half-life decay ($\lambda = 0.35$) for uncited background chunks, where $(t - t_{\text{last}})$ measures elapsed turns since last citation.
 - When $\sum_{c \in \text{Desk}} \text{words}(c) > 2000$, chunks with the lowest utility are sequentially evicted.
 
 ---

@@ -1,8 +1,8 @@
-import { API_BASE_URL } from './client'
 import { liveAdapter } from './adapters/live'
 import { mockAdapter } from './adapters/mock'
 import type { ApiAdapter } from './types'
 
-/** Live when VITE_API_BASE_URL is set, otherwise the development mock. */
-export const adapter: ApiAdapter = API_BASE_URL ? liveAdapter : mockAdapter
+/** Defaults to liveAdapter (routed via Vite proxy or direct base URL), unless VITE_USE_MOCK is explicitly true. */
+const useMock = import.meta.env.VITE_USE_MOCK === 'true'
+export const adapter: ApiAdapter = useMock ? mockAdapter : liveAdapter
 export const isMock = adapter.mode === 'mock'
